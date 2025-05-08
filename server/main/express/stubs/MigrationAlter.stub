@@ -1,0 +1,21 @@
+import Blueprint from '../Blueprint.mjs';
+
+
+class Migrate {
+    tableName = '{{ tableName }}';
+    up() {
+        const blueprint = new Blueprint();
+    
+        const alterTable = blueprint.alter(this.tableName, (table) => {
+            table.changeColumn('username', 'name');
+        });
+
+        return alterTable;
+    }
+    
+    down() {
+        return `DROP TABLE IF EXISTS ${this.tableName};`;
+    }
+}
+
+export default Migrate;

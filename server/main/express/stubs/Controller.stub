@@ -1,0 +1,13 @@
+import Controller from "../../main/base/Controller.mjs";
+
+
+class {{ ControllerName }} extends Controller {
+    // Create methods here 
+    /*
+     * All methods related to Routes must be asynchronous
+    */
+
+    
+}
+
+export default {{ ControllerName }};

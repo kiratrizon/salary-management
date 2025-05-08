@@ -1,0 +1,34 @@
+import Controller from "../../main/base/Controller.mjs";
+
+class {{ ControllerName }} extends Controller {
+    // get
+    async index(request){
+        return response().json(route('user.index'));
+    }
+    // get
+    async create(request){
+        return response().json({message: "{{ ControllerName }} create"})
+    }
+    // post
+    async store(request){
+        return response().json({message: "{{ ControllerName }} store"});
+    }
+    // get
+    async show(request, id){
+        return response().json({message: "{{ ControllerName }} show"})
+    }
+    // get
+    async edit(request, id){
+        return response().json({message: "{{ ControllerName }} show"})
+    }
+    // put
+    async update(request, id){
+        return response().json({message: "{{ ControllerName }} update"})
+    }
+    // delete
+    async destroy(request, id){
+        return response().json({message: "{{ ControllerName }} destroy"})
+    }
+}
+
+export default {{ ControllerName }};
