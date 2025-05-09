@@ -3,6 +3,7 @@ import JWT from "../../../libraries/Services/JWT.mjs";
 import DB from "../../database/Manager/DB.mjs";
 import MemoryCache from "../../../vendor/MemoryCache.mjs";
 import Collection from "../../database/Manager/Collection.mjs";
+import Argon from "../../../libraries/Services/Argon.mjs";
 
 const jwtObj = await config('jwt');
 
@@ -11,7 +12,14 @@ class Guard {
     #model;
     #isModel;
     #table;
-    constructor(driver, modelOrTable, driverProvider) {
+    #header;
+    /**
+     * @param {string} driver 
+     * @param {string|Object} modelOrTable 
+     * @param {string} driverProvider 
+     * @param {ReturnType<import('../http/ExpressHeader').default['all']>} header
+     */
+    constructor(driver, modelOrTable, driverProvider, header) {
         let isModel = driverProvider === 'eloquent';
         this.#driver = driver;
         this.#isModel = isModel;
@@ -20,6 +28,7 @@ class Guard {
         } else {
             this.#table = modelOrTable;
         }
+        this.#header = header;
     }
 
     async attempt(data = {}, remember = false) {
@@ -53,7 +62,8 @@ class Guard {
                 user = DB.table(this.#table).where(key, data[key]).first();
             }
             if (user) {
-                if (Hash.check(data.password, user.password)) {
+                const isMatch = await this.#passwordCheck(data.password, user.password);
+                if (isMatch) {
                     if (this.#driver === 'jwt') {
                         let filtered = user.getJWTCustomClaims();
                         const keyName = `${new this.#model().table || generateTableNames(this.#model.name)}`;
@@ -79,7 +89,7 @@ class Guard {
     check() {
         if (this.#driver === 'jwt') {
             // Get token from Authorization header
-            const token = request().header('authorization');
+            const token = this.#header['authorization'];
             // If no token is provided, return null
             if (empty(token)) {
                 return null;
@@ -148,6 +158,20 @@ class Guard {
             }
         }
         return null;
+    }
+
+    async #passwordCheck(password, hash) {
+        let isMatch = false;
+        if (Hash.check(password, hash)) {
+            isMatch = true;
+        }
+        if (!isMatch) {
+            let argonMatched = await Argon.check(password, hash);
+            if (argonMatched) {
+                isMatch = true;
+            }
+        }
+        return isMatch;
     }
 }
 
